@@ -1,0 +1,30 @@
+---
+- name: Deploy Java App on Localhost
+  hosts: local
+  become: true
+
+  tasks:
+    - name: Ensure Java is installed
+      apt:
+        name: openjdk-17-jdk
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Create app directory
+      file:
+        path: /opt/myapp
+        state: directory
+        mode: '0755'
+
+    - name: Copy JAR file to target directory
+      copy:
+        src: ../target/*.jar
+        dest: /opt/myapp/app.jar
+        remote_src: no
+
+    - name: Run Java application
+      shell: |
+        nohup java -jar /opt/myapp/app.jar > /opt/myapp/app.log 2>&1 &
+      args:
+        executable: /bin/bash
+
